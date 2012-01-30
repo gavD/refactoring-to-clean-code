@@ -1,0 +1,125 @@
+<html>
+<head><title>HTML 5 game demo</title></head>
+<body bgcolor="#D4F1FF">
+    <canvas id="tutorial" width="250" height="250">
+        <p>Your browser doesn't support canvas.</p>
+    </canvas>
+    <p><a href="version4.htm">Prev</a> | <a href="version6.htm">Next</a></p>
+
+<h1>Refactorings/code rules applied</h1>
+<ul>
+    <li><a href="http://refactoring.com/catalog/replaceMagicNumberWithSymbolicConstant.html">Replace Magic Number with Symbolic Constant</a>, also G25 in Clean Code</li>
+    <li>Be consistent with formatting</li>
+    <li><a href="http://refactoring.com/catalog/extractClass.html">Extract class</a></li>
+    <li><a href="http://refactoring.com/catalog/moveMethod.html">Move method</a></li>
+</ul>
+
+    <script type="text/javascript">
+        var canvas = document.getElementById('tutorial');
+        var context = canvas.getContext('2d');
+        var x = 0;
+        var y = 0;
+        
+        function Position(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        var duck = {
+            DROP_SPEED_PX_PER_FRAME: 7,
+            FLY_SPEED_PX_PER_FRAME: 4,
+            MAX_Y_PX: 100,
+            MIN_Y_PX: 40,
+            WING_WIDTH_PX: 40,
+            WING_HEIGHT_PX: 30,
+
+            position: null,
+            frame: 0,
+
+            isGoingDown: false,
+            isHit: false,
+
+            init: function() {
+                this.position = new Position(40, 40);
+            },
+
+            move: function () {
+                if(this.hit) {
+                    this.position.y += duck.DROP_SPEED_PX_PER_FRAME;
+                } else {
+                    if(this.goingDown) {
+                        this.position.x += this.FLY_SPEED_PX_PER_FRAME;
+                        this.position.y += this.FLY_SPEED_PX_PER_FRAME;
+                        if (duck.position.y > this.MAX_Y_PX) {
+                            this.goingDown = false;
+                        }
+                    } else {
+                        this.position.x -= this.FLY_SPEED_PX_PER_FRAME;
+                        this.position.y -= this.FLY_SPEED_PX_PER_FRAME;
+                        if (duck.position.y < duck.MIN_Y_PX) {
+                            this.goingDown = true;
+                        }
+
+                    }
+                    this.frame++;
+                }
+            }
+        };
+
+        var SIGHTS_SIZE_PX = 25;
+        var SIGHT_SHOT_RADIUS_PX = 10;
+
+        function render() {
+            duck.move();
+
+            // ** CLEAR THE CANVAS FOR THE NEXT FRAME ** //
+            context.clearRect(0, 0, canvas.width, canvas.height); // clear canvas
+
+            // ** DRAW DUCK ** //
+            context.strokeStyle = "#00FF00";
+            context.beginPath();
+            context.moveTo(duck.position.x - duck.WING_WIDTH_PX, duck.position.y + (duck.WING_HEIGHT_PX * (duck.frame % 2 === 0 ? -1 : 1)));
+            context.lineTo(duck.position.x, duck.position.y);
+            context.lineTo(duck.position.x + duck.WING_WIDTH_PX, duck.position.y + (duck.WING_HEIGHT_PX * (duck.frame % 2 === 0 ? -1 : 1)));
+            context.stroke();
+
+            // ** DRAW SIGHTS ** //
+            // draw cursor
+            context.strokeStyle = "#000000";
+            context.beginPath();
+            context.arc(x, y, SIGHTS_SIZE_PX, 0, Math.PI*2, true);
+            context.closePath();
+            // draw cross hair
+            context.moveTo(x-SIGHTS_SIZE_PX, y);
+            context.lineTo(x+SIGHTS_SIZE_PX, y);
+            context.moveTo(x, y-SIGHTS_SIZE_PX);
+            context.lineTo(x, y+SIGHTS_SIZE_PX);
+
+            // render sights
+            context.stroke();
+        }
+
+        function ev_mousemove (ev) {
+            x = ev.layerX;
+            y = ev.layerY;
+        }
+
+        function ev_mouseclick(ev) {
+            var clickX = ev.layerX;
+            var clickY = ev.layerY;
+
+            if (   Math.abs(clickX - duck.position.x) < SIGHT_SHOT_RADIUS_PX
+                && Math.abs(clickY - duck.position.y) < SIGHT_SHOT_RADIUS_PX) {
+                duck.hit = true;
+            }
+        }
+
+        // initialise
+        context.lineWidth=4;
+        duck.init();
+        canvas.addEventListener('mousemove', ev_mousemove, false);
+        canvas.addEventListener("click", ev_mouseclick, false);
+        setInterval(render, 100);
+    </script>
+</body>
+</html>

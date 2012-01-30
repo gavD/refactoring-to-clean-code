@@ -1,0 +1,151 @@
+<html>
+<head><title>HTML 5 game demo</title></head>
+<body bgcolor="#D4F1FF">
+    <canvas id="tutorial" width="250" height="250">
+        <p>Your browser doesn't support canvas.</p>
+    </canvas>
+    <p><a href="version9.htm">Prev</a> | <a href="version11.htm">Next</a></p>
+
+<h1>Refactorings/code rules applied</h1>
+<ul>
+    <li><a href="http://refactoring.com/catalog/replaceMagicNumberWithSymbolicConstant.html">Replace Magic Number with Symbolic Constant</a>, also G25 in Clean Code</li>
+    <li>Be consistent with formatting</li>
+    <li><a href="http://refactoring.com/catalog/extractClass.html">Extract class</a></li>
+    <li><a href="http://refactoring.com/catalog/moveMethod.html">Move method</a></li>
+    <li>Dependency injection pattern</li>
+    <li>G19: Use explanatory values</li>
+    <li><a href="http://refactoring.com/catalog/extractMethod.html">Extract method</a></li>
+    <li>replace multiple booleans with state field</li>
+    <li>G20 Functions names should say what they do</li>
+</ul>
+
+    <script type="text/javascript">
+        var canvas = document.getElementById('tutorial');
+        var context = canvas.getContext('2d');
+        var x = 0;
+        var y = 0;
+        
+        function Position(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        var duck = {
+            DROP_SPEED_PX_PER_FRAME: 7,
+            FLY_SPEED_PX_PER_FRAME: 4,
+            MAX_Y_PX: 100,
+            MIN_Y_PX: 40,
+            WING_WIDTH_PX: 40,
+            WING_HEIGHT_PX: 30,
+
+            position: null,
+            targetContext: null,
+            frame: 0,
+            action: null,
+
+            states: {
+                flappingDown: 0,
+                flappingUp: 1,
+                hit: 2
+            },
+
+            init: function(targetContext) {
+                this.position = new Position(40, 40);
+                this.targetContext = targetContext;
+                this.action = this.states.flappingDown;
+            },
+
+            move: function () {
+                if(this.action === this.states.hit) {
+                    this.drop();
+                } else {
+                    this.flap();
+                }
+            },
+
+            drop: function() {
+                this.position.y += duck.DROP_SPEED_PX_PER_FRAME;
+            },
+
+            flap: function() {
+                if(this.action === this.states.flappingDown) {
+                    this.position.x += this.FLY_SPEED_PX_PER_FRAME;
+                    this.position.y += this.FLY_SPEED_PX_PER_FRAME;
+                    if (duck.position.y > this.MAX_Y_PX) {
+                        this.action = this.states.flappingUp;
+                    }
+                } else {
+                    this.position.x -= this.FLY_SPEED_PX_PER_FRAME;
+                    this.position.y -= this.FLY_SPEED_PX_PER_FRAME;
+                    if (duck.position.y < duck.MIN_Y_PX) {
+                        this.action = this.states.flappingDown;
+                    }
+                }
+                this.frame++;
+            },
+
+            render: function() {
+                var isOddFrame = this.frame % 2 === 0;
+                var wingTipYOffset = this.WING_HEIGHT_PX * (isOddFrame ? -1 : 1);
+                var wingTipYPos = this.position.y + wingTipYOffset;
+
+                this.targetContext.beginPath();
+                this.targetContext.strokeStyle = "#00FF00";
+                this.targetContext.moveTo(this.position.x - this.WING_WIDTH_PX, wingTipYPos);
+                this.targetContext.lineTo(this.position.x, this.position.y);
+                this.targetContext.lineTo(this.position.x + this.WING_WIDTH_PX, wingTipYPos);
+                this.targetContext.stroke();
+            }
+        };
+
+        var SIGHTS_SIZE_PX = 25;
+        var SIGHT_SHOT_RADIUS_PX = 10;
+
+        function gameLoop() {
+            duck.move();
+
+            // ** CLEAR THE CANVAS FOR THE NEXT FRAME ** //
+            context.clearRect(0, 0, canvas.width, canvas.height); // clear canvas
+
+            duck.render();
+
+            // ** DRAW SIGHTS ** //
+            // draw cursor
+            context.strokeStyle = "#000000";
+            context.beginPath();
+            context.arc(x, y, SIGHTS_SIZE_PX, 0, Math.PI*2, true);
+            context.closePath();
+            // draw cross hair
+            context.moveTo(x-SIGHTS_SIZE_PX, y);
+            context.lineTo(x+SIGHTS_SIZE_PX, y);
+            context.moveTo(x, y-SIGHTS_SIZE_PX);
+            context.lineTo(x, y+SIGHTS_SIZE_PX);
+
+            // render sights
+            context.stroke();
+        }
+
+        function ev_mousemove (ev) {
+            x = ev.layerX;
+            y = ev.layerY;
+        }
+
+        function ev_mouseclick(ev) {
+            var clickX = ev.layerX;
+            var clickY = ev.layerY;
+
+            if (   Math.abs(clickX - duck.position.x) < SIGHT_SHOT_RADIUS_PX
+                && Math.abs(clickY - duck.position.y) < SIGHT_SHOT_RADIUS_PX) {
+                duck.action = duck.states.hit;
+            }
+        }
+
+        // initialise
+        context.lineWidth=4;
+        duck.init(context);
+        canvas.addEventListener('mousemove', ev_mousemove, false);
+        canvas.addEventListener("click", ev_mouseclick, false);
+        setInterval(gameLoop,100);
+    </script>
+</body>
+</html>

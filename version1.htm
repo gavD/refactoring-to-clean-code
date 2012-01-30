@@ -1,0 +1,91 @@
+<html>
+<head><title>HTML 5 game demo</title></head>
+<body bgcolor="#D4F1FF">
+    <canvas id="tutorial" width="250" height="250">
+        <p>Your browser doesn't support canvas.</p>
+    </canvas>
+
+    <p>Prev | <a href="version2.htm">Next</a></p>
+
+    <script type="text/javascript">
+        var canvas = document.getElementById('tutorial');
+        var context = canvas.getContext('2d');
+        var x = 0; var y = 0;
+        var duckPosX = 40;
+        var duckPosY = 40;
+        var duckFrame = 0;
+        var duckGoingDown = true;
+        var duckHit = false;
+
+        function render() {
+            // ** MOVE OUR DUCK ** //
+            if(duckHit) {
+                duckPosY += 7;
+            } else {
+                if(duckGoingDown) {
+                    duckPosX+=4;
+                    duckPosY+=4;
+                    if (duckPosY > 100) {
+                        duckGoingDown = false;
+                    }
+                } else {
+                    duckPosX-=4;
+                    duckPosY-=4;
+                    if (duckPosY < 40) {
+                        duckGoingDown = true;
+                    }
+
+                }
+                duckFrame++;
+            }
+
+            // ** CLEAR THE CANVAS FOR THE NEXT FRAME ** //
+            context.clearRect(0,0,250,250); // clear canvas
+
+            // ** DRAW DUCK ** //
+            context.strokeStyle = "#00FF00";
+            context.beginPath();
+            context.moveTo(duckPosX-40, duckPosY + (30 * (duckFrame % 2 === 0 ? -1 : 1)));
+            context.lineTo(duckPosX, duckPosY);
+            context.lineTo(duckPosX+40, duckPosY + (30 * (duckFrame % 2 === 0 ? -1 : 1)));
+            context.stroke();
+
+            // ** DRAW SIGHTS ** //
+            // draw cursor
+            context.strokeStyle = "#000000";
+            context.beginPath();
+            context.arc(x,y,30,0,Math.PI*2,true);
+            context.closePath();
+            // draw cross hair
+            context.moveTo(x-30, y);
+            context.lineTo(x+30, y);
+            context.moveTo(x, y-30);
+            context.lineTo(x, y+30);
+
+            // render sights
+            context.stroke();
+        }
+
+        function ev_mousemove (ev) {
+          x=ev.layerX;
+          y=ev.layerY;
+        }
+
+        function ev_mouseclick(ev) {
+            var clickX = ev.layerX;
+            var clickY = ev.layerY;
+
+            if (   Math.abs(clickX - duckPosX) < 10
+                && Math.abs(clickY - duckPosY) < 10) {
+                duckHit = true;
+            }
+        }
+
+        // initialise
+        context.lineWidth=4;
+        canvas.addEventListener('mousemove', ev_mousemove, false);
+        canvas.addEventListener("click", ev_mouseclick, false);
+        setInterval(render,100);
+    </script>
+</body>
+</html>

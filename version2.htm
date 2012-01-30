@@ -1,0 +1,105 @@
+<html>
+<head><title>HTML 5 game demo</title></head>
+<body bgcolor="#D4F1FF">
+    <canvas id="tutorial" width="250" height="250">
+        <p>Your browser doesn't support canvas.</p>
+    </canvas>
+    <p><a href="version1.htm">Prev</a> | <a href="version3.htm">Next</a></p>
+
+<h1>Refactorings applied</h1>
+<ul>
+    <li><a href="http://refactoring.com/catalog/replaceMagicNumberWithSymbolicConstant.html">Replace Magic Number with Symbolic Constant</a>, also G25 in Clean Code</li>
+</ul>
+
+    <script type="text/javascript">
+        var canvas = document.getElementById('tutorial');
+        var context = canvas.getContext('2d');
+        var x = 0; var y = 0;
+        var duckPosX = 40;
+        var duckPosY = 40;
+        var duckFrame = 0;
+        var duckGoingDown = true;
+        var duckHit = false;
+
+        var DUCK_DROP_SPEED_PX_PER_FRAME = 7;
+        var DUCK_FLY_SPEED_PX_PER_FRAME = 4;
+        var DUCK_MAX_Y_PX = 100;
+        var DUCK_MIN_Y_PX = 40;
+        var DUCK_WIN_WIDTH_PX = 40;
+        var DUCK_WIN_HEIGHT_PX = 30;
+
+        var SIGHTS_SIZE_PX = 25;
+        var SIGHT_SHOT_RADIUS_PX = 10;
+
+        function render() {
+            // ** MOVE OUR DUCK ** //
+            if(duckHit) {
+                duckPosY += DUCK_DROP_SPEED_PX_PER_FRAME;
+            } else {
+                if(duckGoingDown) {
+                    duckPosX+=DUCK_FLY_SPEED_PX_PER_FRAME;
+                    duckPosY+=DUCK_FLY_SPEED_PX_PER_FRAME;
+                    if (duckPosY > DUCK_MAX_Y_PX) {
+                        duckGoingDown = false;
+                    }
+                } else {
+                    duckPosX-=DUCK_FLY_SPEED_PX_PER_FRAME;
+                    duckPosY-=DUCK_FLY_SPEED_PX_PER_FRAME;
+                    if (duckPosY < DUCK_MIN_Y_PX) {
+                        duckGoingDown = true;
+                    }
+
+                }
+                duckFrame++;
+            }
+
+            // ** CLEAR THE CANVAS FOR THE NEXT FRAME ** //
+            context.clearRect(0,0,canvas.width,canvas.height); // clear canvas
+
+            // ** DRAW DUCK ** //
+            context.strokeStyle = "#00FF00";
+            context.beginPath();
+            context.moveTo(duckPosX-DUCK_WIN_WIDTH_PX, duckPosY + (DUCK_WIN_HEIGHT_PX * (duckFrame % 2 === 0 ? -1 : 1)));
+            context.lineTo(duckPosX, duckPosY);
+            context.lineTo(duckPosX+DUCK_WIN_WIDTH_PX, duckPosY + (DUCK_WIN_HEIGHT_PX * (duckFrame % 2 === 0 ? -1 : 1)));
+            context.stroke();
+
+            // ** DRAW SIGHTS ** //
+            // draw cursor
+            context.strokeStyle = "#000000";
+            context.beginPath();
+            context.arc(x,y,SIGHTS_SIZE_PX,0,Math.PI*2,true);
+            context.closePath();
+            // draw cross hair
+            context.moveTo(x-SIGHTS_SIZE_PX, y);
+            context.lineTo(x+SIGHTS_SIZE_PX, y);
+            context.moveTo(x, y-SIGHTS_SIZE_PX);
+            context.lineTo(x, y+SIGHTS_SIZE_PX);
+
+            // render sights
+            context.stroke();
+        }
+
+        function ev_mousemove (ev) {
+          x=ev.layerX;
+          y=ev.layerY;
+        }
+
+        function ev_mouseclick(ev) {
+            var clickX = ev.layerX;
+            var clickY = ev.layerY;
+
+            if (   Math.abs(clickX - duckPosX) < SIGHT_SHOT_RADIUS_PX
+                && Math.abs(clickY - duckPosY) < SIGHT_SHOT_RADIUS_PX) {
+                duckHit = true;
+            }
+        }
+
+        // initialise
+        context.lineWidth=4;
+        canvas.addEventListener('mousemove', ev_mousemove, false);
+        canvas.addEventListener("click", ev_mouseclick, false);
+        setInterval(render,100);
+    </script>
+</body>
+</html>

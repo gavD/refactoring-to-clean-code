@@ -1,0 +1,31 @@
+<html>
+<head><title>HTML 5 game demo</title></head>
+<body bgcolor="#D4F1FF">
+    <canvas id="tutorial" width="250" height="250">
+        <p>Your browser doesn't support canvas.</p>
+    </canvas>
+
+    <p>Prev | <a href="version2.htm">Next</a></p>
+
+    <script type="text/javascript">
+        var canvas = document.getElementById('tutorial');
+        var context = canvas.getContext('2d');
+
+        function render() {
+        }
+
+        function ev_mousemove (ev) {
+          x=ev.layerX;
+          y=ev.layerY;
+        }
+
+        function ev_mouseclick(ev) {
+            var clickX = ev.layerX;
+            var clickY = ev.layerY;
+        }
+
+        // initialise
+        setInterval(render,100);
+    </script>
+</body>
+</html>

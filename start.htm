@@ -25,6 +25,9 @@
         }
 
         // initialise
+        context.lineWidth=4;
+        canvas.addEventListener('mousemove', ev_mousemove, false);
+        canvas.addEventListener("click", ev_mouseclick, false);
         setInterval(render,100);
     </script>
 </body>
